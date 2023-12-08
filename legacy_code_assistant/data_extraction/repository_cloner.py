@@ -14,3 +14,8 @@ def clone_repository(repo_url, destination_path):
         print(f"Repository cloned successfully to {destination_path}")
     except Exception as e:
         print(f"Error occurred while cloning the repository: {e}")
+
+
+if __name__ == '__main__':
+    clone_repository("https://github.com/adigunsherif/Django-School-Management-System.git",
+                     r"C:\Users\ml\PycharmProjects\LLM-Dec-Hackathon\tests\test_repo")
