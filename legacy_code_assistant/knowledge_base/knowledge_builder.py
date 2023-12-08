@@ -1,7 +1,10 @@
 import ast
 
-from langchain.vectorstores import FaissStore # TODO: we tu wojtek plis zamontuj tego faissa zeby nam dzialalo
+# from langchain.vectorstores import FaissStore # TODO: we tu wojtek plis zamontuj tego faissa zeby nam dzialalo
+from langchain.vectorestores import FAISS
 from .embedding_processor import EmbeddingProcessor
+from langchain.embeddings import HuggingFaceEmbeddings
+
 
 # TODO: i tu tez zamontuj tego faissa
 class KnowledgeBaseBuilder:
@@ -18,18 +21,37 @@ class KnowledgeBaseBuilder:
         the FaissStore instance
     """
 
-    def __init__(self, index_name='code-search'):
+    def __init__(self, index_name='code-search', model_name='microsoft/codebert-base'):
         """Initialize the Embedding Processor and FaissStore."""
-        self.processor = EmbeddingProcessor()
         self.index_name = index_name
-        self.index = FaissStore(index_name)
+
+        self.model_name = model_name
+        self.processor = HuggingFaceEmbeddings(model_name=self.model_name)
+        self.vectorstore = None
 
     def upload_to_faiss(self, data):
         """Encode the data and upload it to Faiss."""
-        vectors = [(key, self.processor.encode(value)) for key, value in data.items()]
-        for vector in vectors:
-            vector_id, encoded_vector = vector
-            self.index.insert(vector_id, encoded_vector)
+
+        strings = list(data.values())
+        if self.vectorstore is None:
+            self.vectorstore = FAISS.from_texts(
+                texts=strings, 
+                embedding=self.processor,
+            )
+        else:
+            self.vectorstore.add_texts(
+                texts=strings, 
+                embedding=self.processor,
+            )
+
+    def save_index(self):
+        """Save the index."""
+        self.vectorstore.save(self.index_name)
+
+    def load_index(self):
+        """Load the index."""
+        self.vectorstore = FAISS.load(self.index_name)
+
 
 
 class CodeAnalyzer:
