@@ -1,7 +1,12 @@
 import ast
+import os
+import sys
 
 import matplotlib.pyplot as plt
 import networkx as nx
+
+project_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+sys.path.append(project_path)
 
 from legacy_code_assistant.knowledge_base.knowledge_graph.code_extractor import CodeExtractor
 
