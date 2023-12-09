@@ -77,7 +77,7 @@ class KnowledgeBaseBuilder:
         )
         
 
-    def search(self, query: str, k: int = 1) -> List[Tuple[str, float]]:
+    def search(self, query: str, k: int = 3) -> List[Tuple[str, float]]:
         """From a query, find the elements corresponding based on personal information stored in vectordb.
         Euclidian distance is used to find the closest vectors.
 
@@ -103,7 +103,7 @@ class KnowledgeBaseBuilder:
 
     def get_retriever(self):
         """Return the retriever."""
-        return self.vectorstore.as_retriever()
+        return self.vectorstore.as_retriever(search_kwargs={'k':3})
 
 
 class CodeAnalyzer:
