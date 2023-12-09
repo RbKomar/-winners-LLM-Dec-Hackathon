@@ -13,7 +13,6 @@ from langchain.document_loaders import DataFrameLoader
 from legacy_code_assistant.knowledge_base.knowledge_graph.code_extractor import extract_all
 
 
-# TODO: i tu tez zamontuj tego faissa
 class KnowledgeBaseBuilder:
     """
     A class used to represent a Knowledge Base Builder.
@@ -28,12 +27,20 @@ class KnowledgeBaseBuilder:
         the FaissStore instance
     """
 
-    def __init__(self, index_name='code-search', model_name='microsoft/codebert-base'):
+    def __init__(self, index_name='code-search', model_name=None, model=None):
         """Initialize the Embedding Processor and FaissStore."""
         self.index_name = index_name
 
-        self.model_name = model_name
-        self.processor = HuggingFaceEmbeddings(model_name=self.model_name)
+        if model is None and model_name is None:
+            self.model_name = 'microsoft/codebert-base'
+            self.processor = HuggingFaceEmbeddings(model_name=self.model_name)
+        elif model is not None:
+            self.processor = model
+            self.model_name = model_name
+        else:
+            self.model_name = model_name
+            self.processor = HuggingFaceEmbeddings(model_name=self.model_name)
+
         self.vectorstore = None
 
     def upload_texts_to_faiss(self, data):
