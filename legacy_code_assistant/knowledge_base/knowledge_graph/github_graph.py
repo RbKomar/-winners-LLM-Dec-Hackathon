@@ -144,7 +144,6 @@ def main():
     repo_path = r'D:\\PROJEKTY\\LLM-Dec-Hackathon\\tests\\test_repo'
     analyzer = RepoAnalyzer(repo_path)
 
-    # Use session state to store and reuse data
     if 'commits' not in st.session_state:
         st.session_state.commits = analyzer.get_repo_commits()
     if 'files_metadata' not in st.session_state:
