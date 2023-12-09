@@ -1,5 +1,5 @@
 numpy~=1.23.4
-transformers~=4.27.4
+transformers
 langchain~=0.0.348
 sentence-transformers~==2.2.2
 faiss-gpu~==1.7.2
