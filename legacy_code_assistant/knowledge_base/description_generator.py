@@ -27,7 +27,12 @@ class CodeConditionedGenerator:
 
     def generate_docstrings(self):
         prompt = '''
-Given the code of the {type} below, write a docstring for it.
+ Given the code of the {type} below your taks is to generate docString describing functions inside.
+ .Firstly pay attention to all variables that
+are used in the code. Secondly, analyze what is function doing with those variables.
+Based on this, deduce what steps are being taken in this function and what purpose they serve.
+Having all that informations gathered in your mind, 
+write a docstring for the function that will describe step by step what is this function doing, what's it's purpose and what variables it is affecting.
 Do not write anything other than the docstring, docstring should be the only output.
 Start your answer with ```python\n"""\n and end it with """\n```
 \n\n{code}\n\n
