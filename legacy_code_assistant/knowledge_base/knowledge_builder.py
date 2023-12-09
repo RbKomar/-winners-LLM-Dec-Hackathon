@@ -101,6 +101,10 @@ class KnowledgeBaseBuilder:
         """Load the index."""
         self.vectorstore = FAISS.load_local(self.index_name, embeddings =self.processor)
 
+    def get_retriever(self):
+        """Return the retriever."""
+        return self.vectorstore.as_retriever()
+
 
 class CodeAnalyzer:
     """
@@ -133,7 +137,6 @@ class CodeAnalyzer:
 
             with open(file, 'r') as f:
                 content = f.read()
-                # tree = ast.parse(f.read())
 
             classes, functions, mod_info = extract_all(content)
             for cl, cl_info in classes.items():
@@ -157,85 +160,14 @@ class CodeAnalyzer:
                     fun_info['type'] = 'function'
                 results.append(fun_info)
 
-            # for mod_info in modules.items():
             mod_info['file'] = str(file)
             mod_info['module'] = file.stem
             mod_info['name'] = file.stem
             mod_info['type'] = 'module'
             results.append(mod_info)
-
-            # for node in ast.walk(tree):
-                # if isinstance(node, ast.ClassDef):
-                #     info = self.extract_class_info(node)
-                # elif isinstance(node, ast.FunctionDef):
-                #     results['functions'].append(self.extract_function_info(node))
-                # elif isinstance(node, (ast.Import, ast.ImportFrom)):
-                #     results['imports'].append(self.extract_import_info(node))
-                # else:
-                #     results['other_nodes'] = {'type': type(node).__name__, 'lineno': getattr(node, 'lineno', None)}
         
         return results
     
-    # @staticmethod
-    # def extract_other_nodes(node):
-    #     """Extract information about nodes that are neither classes nor functions."""
-    #     return {'type': type(node).__name__, 'lineno': getattr(node, 'lineno', None)}
-
-    # @staticmethod
-    # def extract_function_info(node):
-    #     """
-    #     Extract function information.
-
-    #     Returns
-    #     -------
-    #     dict
-    #         a dictionary containing function name and function docstring.
-    #     """
-    #     return {
-    #         'name': node.name,
-    #         'docstring': ast.get_docstring(node), 
-    #         'source:': astor.to_source(node),
-    #         'type': 'function',
-    #         'lineno': node.lineno,
-    #     }
-
-    # @staticmethod
-    # def extract_class_info(node):
-    #     """
-    #     Extract class information.
-
-    #     Returns
-    #     -------
-    #     dict
-    #         a dictionary containing class name and class docstring.
-    #     """
-    #     return {
-    #         'name': node.name, 
-    #         'docstring': ast.get_docstring(node), 
-    #         'source:': astor.to_source(node),
-    #         'type': 'class',
-    #         'lineno': node.lineno,
-    #     }
-
-    # @staticmethod
-    # def extract_import_info(node):
-    #     """
-    #     Extract import information.
-
-    #     Returns
-    #     -------
-    #     dict
-    #         a dictionary containing import information.
-    #     """
-    #     if isinstance(node, ast.Import):
-    #         names = [alias.name for alias in node.names]
-    #         return {'names': names, 'type': 'import', 'lineno': node.lineno}
-    #     elif isinstance(node, ast.ImportFrom):
-    #         module = node.module
-    #         names = [alias.name for alias in node.names]
-    #         return {'module': module, 'names': names, 'type': 'import_from', 'lineno': node.lineno}
-
-
 
 if __name__ == '__main__':
     kbb = KnowledgeBaseBuilder()
