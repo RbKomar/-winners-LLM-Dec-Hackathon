@@ -5,6 +5,10 @@ from pathlib import Path
 
 from langchain.vectorstores import FAISS
 from langchain.embeddings import HuggingFaceEmbeddings
+from langchain.text_splitter import RecursiveCharacterTextSplitter # to splits data to chunks
+from langchain.document_loaders import DataFrameLoader
+
+
 
 from legacy_code_assistant.knowledge_base.knowledge_graph.code_extractor import extract_all
 
@@ -32,7 +36,7 @@ class KnowledgeBaseBuilder:
         self.processor = HuggingFaceEmbeddings(model_name=self.model_name)
         self.vectorstore = None
 
-    def upload_to_faiss(self, data):
+    def upload_texts_to_faiss(self, data):
         """Encode the data and upload it to Faiss."""
 
         strings = list(data.values())
@@ -46,6 +50,25 @@ class KnowledgeBaseBuilder:
                 texts=strings, 
                 embedding=self.processor,
             )
+
+    def initialize_faiss_based_on_df(self, df, text_column):
+        """Initialize the FaissStore based on a DataFrame."""
+
+        assert self.vectorstore is None, 'FaissStore already initialized.'
+
+        df_loader = DataFrameLoader(
+            df,
+            page_content_column=text_column,
+        )
+
+        text_splitter = RecursiveCharacterTextSplitter(chunk_size=25000, chunk_overlap=10)
+        texts = text_splitter.split_documents(df_loader.load())
+
+
+        self.vectorstore = FAISS.from_documents(
+        texts, self.processor,
+        )
+        
 
     def search(self, query: str, k: int = 1) -> List[Tuple[str, float]]:
         """From a query, find the elements corresponding based on personal information stored in vectordb.
@@ -209,7 +232,7 @@ class CodeAnalyzer:
 
 if __name__ == '__main__':
     kbb = KnowledgeBaseBuilder()
-    kbb.upload_to_faiss({'test': 'def test():\n    pass'})
+    kbb.upload_texts_to_faiss({'test': 'def test():\n    pass'})
     kbb.save_index()
 
     kbb2 = KnowledgeBaseBuilder()
