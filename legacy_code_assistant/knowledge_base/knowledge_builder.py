@@ -144,6 +144,7 @@ class CodeAnalyzer:
                 cl_info['module'] = file.stem
                 cl_info['name'] = cl
                 cl_info['type'] = 'class'
+                fun_info['parent'] = fun_info['module']
                 results.append(cl_info)
 
             for fun, fun_info in functions.items():
