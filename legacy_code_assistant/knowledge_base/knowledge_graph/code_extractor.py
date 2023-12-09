@@ -8,16 +8,19 @@ class CodeExtractor(ast.NodeVisitor):
         self.current_class = None
 
     def get_source_segment(self, node):
-        # Start from the first line of the node
         start_line = node.lineno
-
-        # Check for the presence of a docstring
-        if node.body and isinstance(node.body[0], ast.Expr):
-            # If there's a docstring, start after it
-            start_line = node.body[0].end_lineno + 1
-
         end_line = node.end_lineno  # Inclusive
-        return '\n'.join(self.file_content[start_line-1:end_line]).strip()
+
+        # Handling multiline docstrings
+        if hasattr(node, 'body') and node.body and isinstance(node.body[0], ast.Expr) and isinstance(node.body[0].value, ast.Str):
+            docstring_node = node.body[0]
+            if hasattr(docstring_node, 'end_lineno'):
+                start_line = docstring_node.end_lineno + 1
+            else:
+                # Fallback for single-line docstrings or Python versions without end_lineno
+                start_line += len(ast.get_docstring(node).splitlines())
+
+        return '\n'.join(self.file_content[start_line - 1:end_line]).strip()
 
     def visit_ClassDef(self, node):
         class_docstring = ast.get_docstring(node)
@@ -38,6 +41,7 @@ def extract_classes_methods(file_content):
     extractor = CodeExtractor(file_content)
     extractor.visit(tree)
     return extractor.classes, extractor.functions
+
 
 if __name__ == '__main__':
     file_content = """
