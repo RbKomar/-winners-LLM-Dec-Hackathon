@@ -18,6 +18,7 @@ class CodeUsageGraphBuilder:
         # Adding nodes and edges to the graph
         self._add_class_nodes_and_edges()
         self._add_function_nodes_and_edges()
+        self._add_inheritance_edges()
 
     def _add_class_nodes_and_edges(self):
         for class_name, class_info in self.code_extractor.classes.items():
@@ -36,6 +37,11 @@ class CodeUsageGraphBuilder:
             for callee, count in func_info.usage.items():
                 self.graph.add_edge(func_name, callee, type='calls', weight=count)
 
+    def _add_inheritance_edges(self):
+        for class_name, class_info in self.code_extractor.classes.items():
+            for base_class in class_info.bases:
+                self.graph.add_edge(class_name, base_class, type='inherit')
+
     def print_graph(self):
         print("Edge List: ")
         print(self.graph.edges(data=True))
@@ -48,7 +54,10 @@ class CodeUsageGraphBuilder:
 if __name__ == '__main__':
     # Example usage
     example_code = """
-class MyClass:
+class BaseClass:
+    pass
+
+class MyClass(BaseClass):
     def method1(self):
         pass
 

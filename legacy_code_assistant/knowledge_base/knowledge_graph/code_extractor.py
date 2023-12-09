@@ -3,10 +3,11 @@ import astor
 
 
 class ClassItem:
-    def __init__(self, name, docstring, code):
+    def __init__(self, name, docstring, code, bases=[]):
         self.name = name
         self.docstring = docstring
         self.code = code
+        self.bases = bases
         self.functions = {}
         self.usage = {}
 
@@ -36,8 +37,9 @@ class CodeExtractor(ast.NodeVisitor):
         self.current_function = None
 
     def visit_ClassDef(self, node):
+        base_names = [base.id for base in node.bases if isinstance(base, ast.Name)]
         self.current_class = self.classes[node.name] = ClassItem(
-            node.name, ast.get_docstring(node), astor.to_source(node))
+            node.name, ast.get_docstring(node), astor.to_source(node), base_names)
         self.generic_visit(node)
         self.current_class = None
 
