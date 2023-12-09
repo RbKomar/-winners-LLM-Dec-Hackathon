@@ -1,33 +1,80 @@
 import ast
 import astor
 
+
+class ClassItem:
+    def __init__(self, name, docstring, code):
+        self.name = name
+        self.docstring = docstring
+        self.code = code
+        self.functions = {}
+        self.usage = {}
+
+    def add_usage(self, callee):
+        self.usage[callee] = self.usage.get(callee, 0) + 1
+        print(f"Adding class usage: {self.name} -> {callee}")
+
+
+class FunctionItem:
+    def __init__(self, name, docstring, code):
+        self.name = name
+        self.docstring = docstring
+        self.code = code
+        self.usage = {}
+
+    def add_usage(self, callee):
+        self.usage[callee] = self.usage.get(callee, 0) + 1
+        print(f"Adding function usage: {self.name} -> {callee}")
+
+
 class CodeExtractor(ast.NodeVisitor):
     def __init__(self, file_content):
         self.file_content = file_content.splitlines()
         self.classes = {}
         self.functions = {}
         self.current_class = None
+        self.current_function = None
 
     def visit_ClassDef(self, node):
-        class_docstring = ast.get_docstring(node)
-        class_code = astor.to_source(node)
-        self.current_class = node.name
-        self.classes[node.name] = {
-            'docstring': class_docstring, 'code': class_code,
-            'code_start_line': node.lineno, 'code_end_line': node.end_lineno
-            }
+        self.current_class = self.classes[node.name] = ClassItem(
+            node.name, ast.get_docstring(node), astor.to_source(node))
         self.generic_visit(node)
         self.current_class = None
 
     def visit_FunctionDef(self, node):
-        func_docstring = ast.get_docstring(node)
-        func_code = astor.to_source(node)
-        func_key = (self.current_class, node.name) if self.current_class else node.name
-        self.functions[func_key] = {
-            'docstring': func_docstring, 'code': func_code,
-            'code_start_line': getattr(node, 'lineno', None), 'code_end_line': getattr(node, 'end_lineno', None)
-            }
-        
+        function_item = FunctionItem(node.name, ast.get_docstring(node), astor.to_source(node))
+        if self.current_class:
+            self.current_function = self.current_class.functions[node.name] = function_item
+        else:
+            self.current_function = self.functions[node.name] = function_item
+        self.generic_visit(node)
+        self.current_function = None
+
+    def visit_Call(self, node):
+        callee = self._get_callee(node)
+        if callee and self.current_function:
+            callee = self._check_class_method(callee)
+            self.current_function.add_usage(callee)
+
+    def _get_callee(self, node):
+        if isinstance(node.func, ast.Attribute) and isinstance(node.func.value, ast.Name):
+            instance_name = node.func.value.id
+            method_name = node.func.attr
+            return f"{instance_name}.{method_name}" if instance_name in self.classes else method_name
+
+        elif isinstance(node.func, ast.Name):
+            callee = node.func.id
+            return f"{callee}.__init__" if callee in self.classes else callee
+
+        return None
+
+    def _check_class_method(self, callee):
+        if '.' not in callee:
+            for class_item in self.classes.values():
+                if callee in class_item.functions:
+                    return f"{class_item.name}.{callee}"
+        return callee
+
 
 def extract_classes_methods(file_content):
     tree = ast.parse(file_content)
@@ -47,7 +94,7 @@ def extract_all(file_content):
         'docstring': ast.get_docstring(tree), 'code': module_code,
         'code_start_line': 0, 'code_end_line': None
     }
-    
+
     return extractor.classes, extractor.functions, module
 
 
