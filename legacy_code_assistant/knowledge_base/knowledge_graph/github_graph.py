@@ -1,6 +1,5 @@
 import difflib
 import sys
-
 sys.path.append('D:\\PROJEKTY\\LLM-Dec-Hackathon')
 
 import contextlib
