@@ -1,5 +1,4 @@
 import ast
-import os
 
 import matplotlib.pyplot as plt
 import networkx as nx
@@ -8,11 +7,11 @@ from legacy_code_assistant.knowledge_base.knowledge_graph.code_extractor import 
 
 
 class CodeUsageGraphBuilder:
-    def __init__(self, file_content, repo_path=None):
+    def __init__(self, file_content, repo_path=None, file_path=None):
         self.file_content = file_content
         self.repo_path = repo_path
         self.graph = nx.DiGraph()
-        self.code_extractor = CodeExtractor(self.file_content)
+        self.code_extractor = CodeExtractor(self.file_content, file_path)
 
     def analyze_file(self):
         tree = ast.parse(self.file_content)
@@ -24,10 +23,10 @@ class CodeUsageGraphBuilder:
 
     def _add_class_nodes_and_edges(self):
         for class_name, class_info in self.code_extractor.classes.items():
-            self.graph.add_node(class_name, type='class')
+            self.graph.add_node(class_name, item=class_info, type='class', file_path=class_info.file_path)
             for method_name, method_info in class_info.functions.items():
                 method_full_name = f'{class_name}.{method_name}'
-                self.graph.add_node(method_full_name, type='method')
+                self.graph.add_node(method_full_name, type='method', file_path=method_info.file_path)
                 self.graph.add_edge(class_name, method_full_name, type='consist')
 
                 for callee, count in method_info.usage.items():
@@ -35,7 +34,7 @@ class CodeUsageGraphBuilder:
 
     def _add_function_nodes_and_edges(self):
         for func_name, func_info in self.code_extractor.functions.items():
-            self.graph.add_node(func_name, type='function')
+            self.graph.add_node(func_name, item=func_info, type='function', file_path=func_info.file_path)
             for callee, count in func_info.usage.items():
                 self.graph.add_edge(func_name, callee, type='calls', weight=count)
 
@@ -47,6 +46,7 @@ class CodeUsageGraphBuilder:
     def print_graph(self):
         print("Edge List: ")
         print(self.graph.edges(data=True))
+        print("Node List: ")
 
     def visualize_graph(self):
         pos = nx.spring_layout(self.graph)
@@ -55,7 +55,6 @@ class CodeUsageGraphBuilder:
 
 
 if __name__ == '__main__':
-    # Example usage
     example_code = """
 class BaseClass:
     pass

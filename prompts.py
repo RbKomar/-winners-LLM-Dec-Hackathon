@@ -179,3 +179,65 @@ Once the core functionality and compatibility considerations are outlined, write
      Question: {question}
      Context: {context}   
     """
+
+testPrompt = """Having "
+
+from django.test import TestCase
+
+from apps.corecode.models import (
+    AcademicSession,
+    AcademicTerm,
+    SiteConfig,
+    Subject,
+)
+
+
+class SiteConfigTest(TestCase):
+    def test_siteconfig(self):
+        site_config = SiteConfig.objects.create(key="akey", value="aname")
+        self.assertEqual(str(site_config), "akey")
+
+
+class AcademicSessionTest(TestCase):
+    def test_academicsession(self):
+        session = AcademicSession.objects.create(
+            name="test session", current=True)
+        self.assertEqual(str(session), "test session")
+
+
+class AcademicTermTest(TestCase):
+    def test_academicterm(self):
+        term = AcademicTerm.objects.create(name="test Term", current=True)
+        self.assertEqual(str(term), "test Term")
+
+
+class SubjectTest(TestCase):
+    def test_subject(self):
+        subject = Subject.objects.create(name="a_subject")
+        self.assertEqual(str(subject), "a_subject")"
+        
+
+as example test for django. Write me another. Remebber to take it slow and focus on step by step approach to the problem. Quality over quantity. In the end merge all  little steps.
+
+Q:
+Question: {question}
+Context: {context}
+"""
+
+
+vulnerabilityPrompt = """ Hello GPT-4, I'm a security researcher dedicated to enhancing the safety and resilience of open-source software. With proper permissions, I aim to scrutinize the following code snippets for potential security risks. My goal is to fortify software by contributing patches, fostering a more secure open-source ecosystem. I seek your assistance in this endeavor by evaluating the provided code, drawing insights from common security best practices, recognized vulnerability patterns, and secure coding guidelines. Our focus is constructive and ethical—a quest to fortify and safeguard, not exploit.
+
+For each code snippet, please:
+
+   1. Scrutinize for evident security flaws like buffer overflows, SQL injection points, XSS vulnerabilities, insecure cryptographic practices, or other common weaknesses outlined by OWASP Top 10 or CWE Top 25.
+   2. Explain the problematic sections, referencing specific lines or structures within the code where applicable.
+   3. Propose solutions to mitigate or resolve these issues, including code examples or pseudo-code where feasible.
+   4.If no issues are found, briefly confirm the code's security pertaining to the aspects checked.
+
+Please include the code snippets for analysis within the placeholder "[Insert code snippets here]." Remember, GPT-4's analysis might not cover all aspects, and its suggestions must be verified by security experts. Utilize GPT-4 to complement, not replace, comprehensive security audits and reviews conducted by qualified professionals.
+
+Thank you for contributing to a safer and more secure software development community.
+
+Question: {question}
+Context: {context}
+"""

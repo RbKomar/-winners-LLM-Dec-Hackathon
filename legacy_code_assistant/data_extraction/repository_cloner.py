@@ -18,4 +18,4 @@ def clone_repository(repo_url, destination_path):
 
 if __name__ == '__main__':
     clone_repository("https://github.com/adigunsherif/Django-School-Management-System.git",
-                     r"C:\Users\ml\PycharmProjects\LLM-Dec-Hackathon\tests\test_repo")
+                     r"D:\PROJEKTY\LLM-Dec-Hackathon\tests\test_repo")
