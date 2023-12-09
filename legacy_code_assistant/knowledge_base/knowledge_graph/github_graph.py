@@ -28,10 +28,11 @@ class RepoAnalyzer:
         self.graph = nx.DiGraph()
 
     def get_repo_commits(self):
-        return [
-            {'commit_id': commit.hexsha, 'author': commit.author.name, 'date': commit.committed_datetime.isoformat(),
-             'message': commit.message.strip(), 'files': list(commit.stats.files.keys()), } for commit in
-            self.repo.iter_commits()]
+        return [{'commit_id': commit.hexsha, 'author': commit.author.name,
+                 'date': commit.committed_datetime.isoformat(),
+                 'message': commit.message.strip(),
+                 'files': list(commit.stats.files.keys())}
+                for commit in self.repo.iter_commits()]
 
     def get_repo_files_metadata(self):
         files_metadata = defaultdict(dict)
@@ -81,8 +82,7 @@ class RepoAnalyzer:
             }
 
             for diff in diffs.values():
-                if diff.change_type in ['A', 'M']:  # Added or modified files
-                    # Extracting methods and their changes
+                if diff.change_type in ['A', 'M']:
                     methods = self.extract_methods_from_diff(diff)
                     for method, changes in methods.items():
                         function_modifications[method].append({
@@ -94,12 +94,10 @@ class RepoAnalyzer:
 
     def extract_methods_from_diff(self, diff):
         method_changes = defaultdict(str)
-        # Assuming we are working with Python files for simplicity
         if diff.a_path.endswith(".py"):
             a_blob = diff.a_blob.data_stream.read().decode('utf-8') if diff.a_blob else ''
             b_blob = diff.b_blob.data_stream.read().decode('utf-8') if diff.b_blob else ''
 
-            # Getting the diff lines
             diff_lines = list(difflib.unified_diff(a_blob.splitlines(), b_blob.splitlines()))
 
             current_method = None
@@ -118,23 +116,23 @@ def visualize_function_evolution(function_modifications):
     st.title("Function Evolution Over Time")
     sorted_functions = sorted(function_modifications.items(), key=lambda x: len(x[1]), reverse=True)
 
-    # Ensure a function is selected by default
     selected_function_name, modifications = st.selectbox("Select a function:", sorted_functions,
                                                          format_func=lambda x: f"{x[0]} ({len(x[1])} modifications)",
                                                          index=0)
     if selected_function_name:
-        visualize_modifications(modifications)
+        st.session_state.selected_modifications = modifications
+        visualize_modifications()
     else:
         st.text("No modifications found for the selected function.")
 
 
-def visualize_modifications(modifications):
+def visualize_modifications():
+    modifications = st.session_state.selected_modifications
+
     function_change_dates = [mod['date'] for mod in modifications]
-    # Reverse the order of dates
     function_change_dates.reverse()
     modifications.reverse()
 
-    # Using the index of the modification as the slider value
     time_index = st.select_slider("Select a point in time", options=range(len(function_change_dates)),
                                   format_func=lambda x: function_change_dates[x], key="time_slider")
 
@@ -145,37 +143,18 @@ def visualize_modifications(modifications):
 def main():
     repo_path = r'D:\\PROJEKTY\\LLM-Dec-Hackathon\\tests\\test_repo'
     analyzer = RepoAnalyzer(repo_path)
-    commits = analyzer.get_repo_commits()
-    files_metadata = analyzer.get_repo_files_metadata()
-    _, _ = analyzer.build_commit_dependency_graph(commits, files_metadata)
 
-    function_modifications = analyzer.get_function_modifications()
-    visualize_function_evolution(function_modifications)
+    # Use session state to store and reuse data
+    if 'commits' not in st.session_state:
+        st.session_state.commits = analyzer.get_repo_commits()
+    if 'files_metadata' not in st.session_state:
+        st.session_state.files_metadata = analyzer.get_repo_files_metadata()
+    if 'function_modifications' not in st.session_state:
+        st.session_state.function_modifications = analyzer.get_function_modifications()
 
+    _, _ = analyzer.build_commit_dependency_graph(st.session_state.commits, st.session_state.files_metadata)
 
-def past_examp(files_metadata, graph, analyzer, commits_data):
-    print("Sample Nodes:", list(graph.nodes(data=True))[:10])
-    print("Sample Edges:", list(graph.edges(data=True))[:10])
-
-    commit_id_to_analyze = 'fabbfe76f07f668ea8b4502522dc2f401d4f19bd'
-    affected_nodes = analyzer.query_commit_dependency_graph(graph, commit_id_to_analyze)
-    print(f"Nodes affected by commit {commit_id_to_analyze}:", affected_nodes)
-    hotspots = {node: data for node, data in graph.nodes(data=True) if
-                data['type'] in [NODE_TYPE_CLASS, NODE_TYPE_METHOD] and data.get('modification_count', 0) > 2}
-
-    for cls, cls_data in files_metadata['classes'].items():
-        print(f"Class: {cls}\nDocumentation: {cls_data['docstring']}\nCode:\n{cls_data['code']}\n")
-
-    for method, method_data in files_metadata['methods'].items():
-        print(f"Method: {method}\nDocumentation: {method_data['docstring']}\nCode:\n{method_data['code']}\n")
-
-    author_to_code_segments = defaultdict(set)
-    for commit in commits_data:
-        for file in commit['files']:
-            author_to_code_segments[commit['author']].add(file)
-
-    for author, files in author_to_code_segments.items():
-        print(f"Author: {author}\nFiles Worked On: {files}\n")
+    visualize_function_evolution(st.session_state.function_modifications)
 
 
 if __name__ == "__main__":
