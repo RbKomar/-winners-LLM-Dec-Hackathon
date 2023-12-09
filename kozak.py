@@ -7,7 +7,7 @@ import sys
 from legacy_code_assistant.knowledge_base.knowledge_builder import KnowledgeBaseBuilder
 # from legacy_code_assistant.knowledge_base.knowledge_builder import CodeAnalyzer
 from langchain.embeddings import AzureOpenAIEmbeddings
-from prompts import modifyPrompt, testPrompt
+from prompts import modifyPrompt, testPrompt, vulnerabilityPrompt
 from langchain.chat_models import AzureChatOpenAI
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.prompts import ChatPromptTemplate
@@ -109,6 +109,15 @@ class pipeProcess:
         print(result)
         return result
 
+    def vulPipe(self):
+        print("Wchodzę w pipe sprawdzanie podatności, Wpisz swój prompt do chatu")
+        user_input = input()
+        template = vulnerabilityPrompt
+        chain = self._build_chain(template)
+        result = chain.invoke(user_input)
+        print(result)
+        return result
+
     def otherPipe(self):
         print("Wchodzę w pipe inne, Wpisz swój prompt do chatu")
         user_input = input()
@@ -123,7 +132,7 @@ class pipeProcess:
         return result
 
     def startPipe(self):
-        print("Wybierz jedną z mozliwych kategorii: 1: Analiza, 2: Dodanie, 3: Testy: 4, Modyfikacja, 5: Inne. Wpisz numer kategorii: ")
+        print("Wybierz jedną z mozliwych kategorii: 1: Analiza, 2: Dodanie, 3: Testy: 4, Modyfikacja,5: Szukanie podatności 6: Inne. Wpisz numer kategorii: ")
         category = input()
         print("Wybrana kategoria to " + category)
         if (category == "1"):
@@ -135,6 +144,8 @@ class pipeProcess:
         elif (category == "4"):
             self.testPipe()
         elif (category == "5"):
+            self.vulPipe()
+        elif (category == "6"):
             self.otherPipe()
 
 
