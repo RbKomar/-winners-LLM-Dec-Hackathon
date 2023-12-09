@@ -1,35 +1,53 @@
 import os
+import sys
 from collections import defaultdict
 
 import networkx as nx
-from streamlit_agraph import agraph, Config, Edge, Node
 import streamlit as st
+from streamlit_agraph import agraph, Config, Edge, Node
+
+project_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+sys.path.append(project_path)
 
 from legacy_code_assistant.knowledge_base.knowledge_graph.code_graph import CodeUsageGraphBuilder
 
 
 class RepoCodeGraphGenerator:
     def __init__(self, repo_path):
+        """Initialize the RepoCodeGraphGenerator with a repository path."""
         self.repo_path = repo_path
         self.complete_graph = nx.DiGraph()
         self.module_folder_node_count = defaultdict(int)
 
-    def generate_graph(self):
+    def analyze_repo(self):
+        """
+        Analyze the repo, generate a graph of code usage and count nodes per module folder.
+        """
         for root, dirs, files in os.walk(self.repo_path):
             for file in files:
                 if file.endswith('.py') and 'app' in root:
-                    file_path = os.path.join(root, file)
-                    with open(file_path, 'r') as f:
-                        file_content = f.read()
+                    self.analyze_file(os.path.join(root, file))
 
-                    size = self._get_binned_size(len(file_content))
+    def analyze_file(self, file_path):
+        """Analyze a python file in the provided path."""
+        with open(file_path, 'r') as f:
+            file_content = f.read()
 
-                    graph_builder = CodeUsageGraphBuilder(file_content, file_path=file_path)
-                    graph_builder.analyze_file()
-                    self._merge_graph(graph_builder.graph, size)
+        size = self._get_binned_size(len(file_content))
+        graph_builder = CodeUsageGraphBuilder(file_content, file_path=file_path)
+        graph_builder.analyze_file()
+        self._merge_graph(graph_builder.graph, size)
 
-                    folder = root.split(os.sep)[-1]
-                    self.module_folder_node_count[folder] += len(graph_builder.graph.nodes)
+        folder = os.path.dirname(file_path).split(os.sep)[-1]
+        self.module_folder_node_count[folder] += len(graph_builder.graph.nodes)
+
+    def _add_node_edges(self, graph):
+        """Add nodes and its edges to the graph provided."""
+        nodes = [Node(id=n, label=n, size=data['size'], metadata={key: data[key] for key in data}) for n, data in
+                 graph.nodes(data=True)]
+        edges = [Edge(source=source, target=target, label=data.get('type', 'N/A')) for source, target, data in
+                 graph.edges(data=True)]
+        return nodes, edges
 
     def _merge_graph(self, partial_graph, size):
         for node in list(partial_graph.nodes):
@@ -68,41 +86,36 @@ class RepoCodeGraphGenerator:
                 module_graph.add_edge(edge[0], edge[1], **edge[2])
 
         return module_graph
-s
+
     def plot_module_graph(self, module_name):
+        """Plot graph of a provided module name."""
         graph = self.generate_graph_from_module(module_name)
-        nodes = [Node(id=n, label=n, size=data['size'], metadata={key: data[key] for key in data})
-                 for n, data in graph.nodes(data=True)]
-        edges = [Edge(source=source, target=target, label=data.get('type', 'N/A'))
-                 for source, target, data in graph.edges(data=True)]
-        config = Config(width=1200, height=600, directed=True)
-
+        nodes, edges = self._add_node_edges(graph)
         # Capture the event data
+        config = Config(width=1200, height=600, directed=True)
         agraph(nodes=nodes, edges=edges, config=config)
+        return graph
 
-    def show_graph(self):
-        if 'agraph_plot' in st.session_state:
-            node_clicked = st.session_state['agraph_plot']['nodes'][0]
-            st.session_state.node_clicked = node_clicked
-            st.markdown(
-                f"You clicked on node: {node_clicked['id']} "
-                f"with metadata: {node_clicked['metadata']}"
-            )
-            st.write("Debug: Node clicked event captured!")  # Debugging statement
-        else:
-            st.session_state.node_clicked = None
-            st.write("Debug: No node click event captured yet.")
+    @staticmethod
+    def show_node_details(graph):
+        """Add a Tab with details of each node in the graph."""
+        nodes = list(graph.nodes(data=True))
+        if st.sidebar.button("Show Node Details"):
+            st.sidebar.markdown("## Node Details")
+            node_id = st.sidebar.selectbox("Select a node", options=[node[0] for node in nodes], index=0)
+            if selected_node := next((node for node in nodes if node[0] == node_id), None):
+                st.sidebar.json(selected_node[1])
 
 
 if __name__ == '__main__':
-    st.set_page_config(page_title="Graph Visualization", page_icon=":bar_chart:",
-                       layout='wide', initial_sidebar_state='expanded')
-    repo_path = st.sidebar.text_input(
-        "Repository Path", 'D:\\PROJEKTY\\LLM-Dec-Hackathon\\tests\\test_repo')
+    st.set_page_config(page_title="Graph Visualization", page_icon=":bar_chart:", layout='wide',
+                       initial_sidebar_state='expanded')
+    project_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+    repo_path = st.sidebar.text_input("Repository Path", project_path + '\\tests\\test_repo')
     generator = RepoCodeGraphGenerator(repo_path)
-    generator.generate_graph()
+    generator.analyze_repo()
     top_k_modules = generator.get_top_k_modules(5)
     module_name = st.sidebar.selectbox("Module Name", top_k_modules)
     if st.sidebar.button('Generate Graph'):
-        generator.plot_module_graph(module_name)
-        generator.show_graph()
+        graph = generator.plot_module_graph(module_name)
+        generator.show_node_details(graph)
