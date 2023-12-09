@@ -1,21 +1,23 @@
 import ast
+import os
+
 import matplotlib.pyplot as plt
 import networkx as nx
 
 from legacy_code_assistant.knowledge_base.knowledge_graph.code_extractor import CodeExtractor
 
+
 class CodeUsageGraphBuilder:
-    def __init__(self, file_content):
+    def __init__(self, file_content, repo_path=None):
         self.file_content = file_content
+        self.repo_path = repo_path
         self.graph = nx.DiGraph()
         self.code_extractor = CodeExtractor(self.file_content)
 
     def analyze_file(self):
-        # Analyzing the file for class and function usage
         tree = ast.parse(self.file_content)
         self.code_extractor.visit(tree)
 
-        # Adding nodes and edges to the graph
         self._add_class_nodes_and_edges()
         self._add_function_nodes_and_edges()
         self._add_inheritance_edges()
@@ -50,6 +52,7 @@ class CodeUsageGraphBuilder:
         pos = nx.spring_layout(self.graph)
         nx.draw(self.graph, pos, with_labels=True, node_color='lightblue', edge_color='gray')
         plt.show()
+
 
 if __name__ == '__main__':
     # Example usage

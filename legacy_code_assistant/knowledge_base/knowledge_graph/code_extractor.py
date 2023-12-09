@@ -3,7 +3,9 @@ import astor
 
 
 class ClassItem:
-    def __init__(self, name, docstring, code, bases=[]):
+    def __init__(self, name, docstring, code, bases=None):
+        if bases is None:
+            bases = []
         self.name = name
         self.docstring = docstring
         self.code = code
@@ -22,6 +24,7 @@ class FunctionItem:
         self.docstring = docstring
         self.code = code
         self.usage = {}
+        self.path = None
 
     def add_usage(self, callee):
         self.usage[callee] = self.usage.get(callee, 0) + 1
@@ -67,7 +70,6 @@ class CodeExtractor(ast.NodeVisitor):
         elif isinstance(node.func, ast.Name):
             callee = node.func.id
             return f"{callee}.__init__" if callee in self.classes else callee
-
         return None
 
     def _check_class_method(self, callee):
