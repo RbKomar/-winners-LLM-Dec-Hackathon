@@ -3,36 +3,40 @@ import astor
 
 
 class ClassItem:
-    def __init__(self, name, docstring, code, bases=None):
-        if bases is None:
-            bases = []
+    def __init__(self, name, docstring, source_code, base_names, file_path):
         self.name = name
         self.docstring = docstring
-        self.code = code
-        self.bases = bases
+        self.source_code = source_code
+        self.bases = base_names
         self.functions = {}
         self.usage = {}
+        self.file_path = file_path
+
+    def __repr__(self):
+        return f"ClassItem(name={self.name})"
 
     def add_usage(self, callee):
         self.usage[callee] = self.usage.get(callee, 0) + 1
-        print(f"Adding class usage: {self.name} -> {callee}")
 
 
 class FunctionItem:
-    def __init__(self, name, docstring, code):
+    def __init__(self, name, docstring, code, file_path):
         self.name = name
         self.docstring = docstring
         self.code = code
         self.usage = {}
-        self.path = None
+        self.file_path = file_path
+
+    def __repr__(self):
+        return f"FunctionItem(name={self.name})"
 
     def add_usage(self, callee):
         self.usage[callee] = self.usage.get(callee, 0) + 1
-        print(f"Adding function usage: {self.name} -> {callee}")
 
 
 class CodeExtractor(ast.NodeVisitor):
-    def __init__(self, file_content):
+    def __init__(self, file_content, file_path=None):
+        self.file_path = file_path
         self.file_content = file_content.splitlines()
         self.classes = {}
         self.functions = {}
@@ -42,12 +46,12 @@ class CodeExtractor(ast.NodeVisitor):
     def visit_ClassDef(self, node):
         base_names = [base.id for base in node.bases if isinstance(base, ast.Name)]
         self.current_class = self.classes[node.name] = ClassItem(
-            node.name, ast.get_docstring(node), astor.to_source(node), base_names)
+            node.name, ast.get_docstring(node), astor.to_source(node), base_names, self.file_path)
         self.generic_visit(node)
         self.current_class = None
 
     def visit_FunctionDef(self, node):
-        function_item = FunctionItem(node.name, ast.get_docstring(node), astor.to_source(node))
+        function_item = FunctionItem(node.name, ast.get_docstring(node), astor.to_source(node), self.file_path)
         if self.current_class:
             self.current_function = self.current_class.functions[node.name] = function_item
         else:
@@ -92,7 +96,6 @@ def extract_all(file_content):
     extractor = CodeExtractor(file_content)
     extractor.visit(tree)
 
-    # Extract the module code
     module_code = astor.to_source(tree)
     module = {
         'docstring': ast.get_docstring(tree), 'code': module_code,
