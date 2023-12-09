@@ -7,7 +7,7 @@ import sys
 from legacy_code_assistant.knowledge_base.knowledge_builder import KnowledgeBaseBuilder
 # from legacy_code_assistant.knowledge_base.knowledge_builder import CodeAnalyzer
 from langchain.embeddings import AzureOpenAIEmbeddings
-
+from prompts import modifyPrompt
 from langchain.chat_models import AzureChatOpenAI
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.prompts import ChatPromptTemplate
@@ -92,11 +92,7 @@ class pipeProcess:
     def modifyPipe(self):
         print("Wchodzę w pipe modyfikacji, Wpisz swój prompt do chatu")
         user_input = input()
-        template = """Answer the question based only on the following context:
-        {context}
-
-        Question: {question}
-        """
+        template = modifyPrompt
         chain = self._build_chain(template)
         result = chain.invoke(user_input)
         print(result)
@@ -129,6 +125,6 @@ class pipeProcess:
             self.otherPipe()
 
 if __name__ == "__main__":
-    pipe = pipeProcess(filepath='notebooks/functions_with_generated_docstrings.csv',
+    pipe = pipeProcess(filepath='notebooks/generated_docstrings.csv',
                        index_name='notebooks/docstring_based_index')
     pipe.startPipe()
