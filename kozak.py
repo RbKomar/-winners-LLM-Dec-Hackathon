@@ -7,7 +7,7 @@ import sys
 from legacy_code_assistant.knowledge_base.knowledge_builder import KnowledgeBaseBuilder
 # from legacy_code_assistant.knowledge_base.knowledge_builder import CodeAnalyzer
 from langchain.embeddings import AzureOpenAIEmbeddings
-from prompts import modifyPrompt
+from prompts import modifyPrompt, analyzePrompt, addPrompt
 from langchain.chat_models import AzureChatOpenAI
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.prompts import ChatPromptTemplate
@@ -45,9 +45,9 @@ class pipeProcess:
         )
         self.df = pd.read_csv(filepath)
 
-        kbb_docs = KnowledgeBaseBuilder(index_name=index_name, model=self.embeddings)
-        kbb_docs.load_index()
-        self.retriever = kbb_docs.get_retriever()
+        self.kbb_docs = KnowledgeBaseBuilder(index_name=index_name, model=self.embeddings)
+        self.kbb_docs.load_index()
+        self.retriever = self.kbb_docs.get_retriever()
 
     def _build_chain(self, template):
         prompt = ChatPromptTemplate.from_template(template)
@@ -63,12 +63,8 @@ class pipeProcess:
     def analyzePipe(self):
         print("Wchodzę w pipe analizy, Wpisz swój prompt do chatu")
         user_input = input()
-        
-        template = """Answer the question based only on the following context:
-        {context}
-
-        Question: {question}
-        """
+        # print("znalazlem",self.kbb_docs.search(user_input),)
+        template = analyzePrompt
         chain = self._build_chain(template)
         result = chain.invoke(user_input)
         print(result)
@@ -78,12 +74,8 @@ class pipeProcess:
     def addPipe(self):
         print("Wchodzę w pipe dodawania, Wpisz swój prompt do chatu")
         user_input = input()
-        
-        template = """Answer the question based only on the following context:
-        {context}
-
-        Question: {question}
-        """
+        # print(self.kbb_docs.search(user_input))
+        template = addPrompt
         chain = self._build_chain(template)
         result = chain.invoke(user_input)
         print(result)
@@ -92,6 +84,7 @@ class pipeProcess:
     def modifyPipe(self):
         print("Wchodzę w pipe modyfikacji, Wpisz swój prompt do chatu")
         user_input = input()
+        # print("retriever",self.retriever,"||",self.kbb_docs.search(user_input))
         template = modifyPrompt
         chain = self._build_chain(template)
         result = chain.invoke(user_input)
