@@ -2,8 +2,8 @@ import contextlib
 import os
 import sys
 
-project_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
-sys.path.append(project_path)
+PROJECT_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(PROJECT_PATH)
 
 from collections import defaultdict
 
@@ -12,6 +12,7 @@ import streamlit as st
 from streamlit_agraph import agraph, Config, Edge, Node
 
 from legacy_code_assistant.knowledge_base.knowledge_graph.code_graph import CodeUsageGraphBuilder
+from legacy_code_assistant.rag_integration.rag_manager import RagManager
 
 
 class CodeGraphAnalyzer:
@@ -100,7 +101,8 @@ class CodeGraphAnalyzer:
 
 def get_project_path():
     """Utility function to determine the project path."""
-    return os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
+    # return os.path.abspath(osos.path.dirname(__file__))
+    return PROJECT_PATH
 
 
 def main():
@@ -196,7 +198,8 @@ def display_class_function_details(graph_builder, node_id):
 
                 st.markdown(f"#### LLM Prompts")
                 selected_prompt = st.selectbox("Select a prompt template:",
-                                                ["Describe", "Ask Question", "Refactor", "Write Tests"],
+                                                ["Describe", "Ask Question", "Refactor", "Write Tests",
+                                                 "Add Code", "Modify Code", "Search for Vulnerabilities"],
                                                 key=f'prompt_select_{node_id}')
                 additional_info = st.text_area("Additional information:", key=f'additional_info_{node_id}')
 
@@ -209,9 +212,29 @@ def display_class_function_details(graph_builder, node_id):
 def process_prompt(prompt_template, additional_info, node_id):
     # Placeholder function to process the prompt
     # TODO: RAG model processing logic here - bois please do this jesli możecie
+    
     st.write(
         f"Processing {prompt_template} with {additional_info} for node {node_id}")  # Here you would integrate your RAG model processing logic
 
+    manager = RagManager('credentials.yaml', 'docstring_based_index', 'credentials.yaml')
+    if prompt_template == 'Describe':
+        result = manager.describe_code(additional_info)
+    elif prompt_template == 'Ask Question':
+        result = manager.describe_code(additional_info) #???
+    elif prompt_template == 'Refactor':
+        result = manager.refactor_code(additional_info)
+    elif prompt_template == 'Write Tests':
+        result = manager.write_tests(additional_info)
+    elif prompt_template == 'Add Code':
+        result = manager.add_code(additional_info)
+    elif prompt_template == 'Modify Code':
+        result = manager.modify_code(additional_info)
+    elif prompt_template == 'Search for Vulnerabilities':
+        result = manager.search_for_vulnerabilities(additional_info)
+    else:
+        raise ValueError(f"Invalid prompt template: {prompt_template}")
+
+    st.markdown(result)
 
 if __name__ == '__main__':
     main()

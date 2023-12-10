@@ -8,7 +8,7 @@ from legacy_code_assistant.knowledge_base.knowledge_builder import KnowledgeBase
 # from legacy_code_assistant.knowledge_base.knowledge_builder import CodeAnalyzer
 from langchain.embeddings import AzureOpenAIEmbeddings
 
-from legacy_code_assistant.rag_integation.rag_prompts import (
+from legacy_code_assistant.rag_integration.rag_prompts import (
     modifyPrompt, analyzePrompt, addPrompt, testPrompt, vulnerabilityPrompt)
 
 from langchain.chat_models import AzureChatOpenAI
@@ -17,11 +17,6 @@ from langchain.prompts import ChatPromptTemplate
 from langchain.schema.output_parser import StrOutputParser
 from langchain.schema.runnable import RunnableLambda, RunnablePassthrough
 from langchain.vectorstores import FAISS
-
-with open('notebooks/credentials.yaml', "r") as f:
-    credentials = yaml.load(f, Loader=yaml.FullLoader)
-os.environ["AZURE_OPENAI_ENDPOINT"] = credentials['AZURE_OPENAI_ENDPOINT']
-os.environ["AZURE_OPENAI_API_KEY"] = credentials['AZURE_OPENAI_API_KEY']
 
 
 #   def getFunctionsDataFrame():
@@ -37,8 +32,14 @@ def format_docs(docs):
     return [doc.page_content for doc in docs]
 
 
-class pipeProcess:
-    def __init__(self, filepath, index_name):
+class RagManager:
+    def __init__(self, filepath, index_name, credentials_filepath):
+        with open(credentials_filepath, "r") as f:
+            credentials = yaml.load(f, Loader=yaml.FullLoader)
+        os.environ["AZURE_OPENAI_ENDPOINT"] = credentials['AZURE_OPENAI_ENDPOINT']
+        os.environ["AZURE_OPENAI_API_KEY"] = credentials['AZURE_OPENAI_API_KEY']
+
+
         self.model = AzureChatOpenAI(
             openai_api_version="2023-05-15",
             azure_deployment=credentials['Deployment_completion'],
@@ -72,24 +73,22 @@ class pipeProcess:
         result = chain.invoke(user_input)
         return result
 
-    def analyzePipe(self, user_input):
+    def describe_code(self, user_input):
         return self._run_chain(analyzePrompt, user_input)
 
-    def addPipe(self, user_input):
+    def add_code(self, user_input):
         return self._run_chain(addPrompt, user_input)
 
-    def modifyPipe(self, user_input):
+    def modify_code(self, user_input):
         return self._run_chain(modifyPrompt, user_input)
 
-    def testPipe(self, user_input):
+    def write_tests(self, user_input):
         return self._run_chain(testPrompt, user_input)
 
-    def vulPipe(self, user_input):
+    def search_for_vulnerabilities(self, user_input):
         return self._run_chain(vulnerabilityPrompt, user_input)
-
-
-    def otherPipe(self, user_input):
+    
+    def refactor_code(self, user_input):
         raise NotImplementedError
-        # return self._run_chain(analyzePrompt, user_input)
-
+    
 
