@@ -10,3 +10,11 @@ beautifulsoup4
 lxml
 streamlit-agraph
 streamlit-aggrid
+
+PyYAML
+pandas
+tqdm
+matplotlib
+networkx
+streamlit
+torch

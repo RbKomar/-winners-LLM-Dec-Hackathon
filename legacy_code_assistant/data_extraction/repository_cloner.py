@@ -17,5 +17,8 @@ def clone_repository(repo_url, destination_path):
 
 
 if __name__ == '__main__':
+    import os
+
+    project_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     clone_repository("https://github.com/adigunsherif/Django-School-Management-System.git",
-                     r"D:\PROJEKTY\LLM-Dec-Hackathon\tests\test_repo")
+                     rf"{project_path}\tests\test_repo")
