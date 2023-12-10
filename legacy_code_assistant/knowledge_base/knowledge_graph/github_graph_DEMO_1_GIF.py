@@ -15,8 +15,9 @@ import streamlit as st
 
 from legacy_code_assistant.knowledge_base.knowledge_graph.code_extractor import extract_classes_methods
 
-REPO_PATH = project_path + r'tests\test_repo'
+REPO_PATH = os.path.join(project_path, 'tests', 'test_repo')
 
+print(project_path, REPO_PATH)
 # Constants
 NODE_TYPE_COMMIT = "commit"
 NODE_TYPE_FILE = "file"
@@ -141,6 +142,7 @@ def visualize_modifications():
 
 def main():
     repo_path = REPO_PATH
+    print(repo_path)
     analyzer = RepoAnalyzer(repo_path)
 
     if 'commits' not in st.session_state:
