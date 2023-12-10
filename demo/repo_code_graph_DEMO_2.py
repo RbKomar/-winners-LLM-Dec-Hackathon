@@ -1,6 +1,7 @@
 import contextlib
 import os
 import sys
+import yaml
 
 PROJECT_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(PROJECT_PATH)
@@ -14,6 +15,18 @@ from streamlit_agraph import agraph, Config, Edge, Node
 from legacy_code_assistant.knowledge_base.knowledge_graph.code_graph import CodeUsageGraphBuilder
 from legacy_code_assistant.rag_integration.rag_manager import RagManager
 
+if 'AZURE_OPENAI_ENDPOINT' in st.secrets:
+    # credentials are given through streamlit.secters
+    credentials = {
+        'AZURE_OPENAI_ENDPOINT': st.secrets['AZURE_OPENAI_ENDPOINT'],
+        'AZURE_OPENAI_API_KEY': st.secrets['AZURE_OPENAI_ENDPOINT'],
+        'Deployment_completion': st.secrets['Deployment_completion'],
+        'Deployment_embeddings': st.secrets['Deployment_embeddings'],
+    }
+
+    # save credentials to local yaml file
+    with open('credentials.yaml', 'w') as f:
+        yaml.dump(credentials, f)
 
 class CodeGraphAnalyzer:
     """
