@@ -2,7 +2,7 @@ numpy
 transformers
 langchain
 sentence-transformers
-faiss-gpu
+faiss-cpu
 astor
 openai
 tiktoken
