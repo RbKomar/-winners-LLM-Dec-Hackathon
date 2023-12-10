@@ -263,3 +263,41 @@ Thank you for contributing to a safer and more secure software development commu
 Question: {question}
 Context: {context}
 """
+
+refactorPrompt = """
+We're aiming to enhance the existing codebase. Your task involves:
+
+    1.Refactoring for Readability and Maintainability:
+        Break down complex functions into smaller, more manageable methods.
+        Ensure each method adheres to a single responsibility.
+        Apply the "Don't Repeat Yourself" (DRY) principle to eliminate redundancy.
+
+    2.Performance Optimization:
+        Optimize code performance while maintaining clarity.
+
+    3.SOLID Design Principle Alignment:
+        Align the code with SOLID principles for robust object-oriented design.
+
+    4.Adherence to Google's Coding Style Guidelines:
+        Update the code to conform to Google's coding style for the specific programming language used.
+
+    5.Thorough Error Check and Bug Fixing:
+        Review the code comprehensively to identify and rectify any bugs or errors, ensuring the application functions correctly.
+
+Please document significant changes made, explaining the rationale behind each alteration and how it contributes to enhancing the codebase. Your documentation will aid in understanding your methodology and support future maintenance.
+Question: {question}
+Context: {context}
+"""
+
+askPrmopt = """
+Hello,
+I'm working on project, and I have a specific fragment of code that is intended to describe the model's functionality. I'm looking for clarification on how this description correlates with the model's actual behavior and whether it is implemented  correctly.
+
+However, I'm uncertain about it. Could someone explain if my code accurately reflects the intended behavior, and if not, what changes would make it align with the model's purpose?
+
+Additionally, if there are any best practices or patterns I should follow when describing a model within this fragment, I would appreciate any advice on that.
+
+Thank you for your help!
+Question: {question}
+Context: {context}
+"""
