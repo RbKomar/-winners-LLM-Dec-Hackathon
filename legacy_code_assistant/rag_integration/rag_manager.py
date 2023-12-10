@@ -56,39 +56,47 @@ class RagManager:
         self.retriever = self.kbb_docs.get_retriever()
 
 
-    def _build_chain(self, template):
+    def _build_chain(self, template, context=None):
         prompt = ChatPromptTemplate.from_template(template)
 
-        chain = (
-            {"context": self.retriever | format_docs,
-                "question": RunnablePassthrough()}
-            | prompt
-            | self.model
-            | StrOutputParser()
-        )
+        if context is not None:
+            chain = (
+                {"context": self.retriever | format_docs,
+                 "question": RunnablePassthrough()}
+                | prompt
+                | self.model
+                | StrOutputParser()
+            )
+        else:
+            chain = (
+                {'context': context, 
+                 "question": RunnablePassthrough()}
+                | prompt
+                | self.model
+                | StrOutputParser()
+            )
         return chain
     
-    def _run_chain(self, prompt_template, user_input):
-        chain = self._build_chain(prompt_template)
+    def _run_chain(self, prompt_template, user_input, context=None):
+        chain = self._build_chain(prompt_template, context=context)
         result = chain.invoke(user_input)
         return result
 
-    def describe_code(self, user_input):
-        return self._run_chain(analyzePrompt, user_input)
+    def analyze_code(self, user_input, context=None):
+        return self._run_chain(analyzePrompt, user_input, context=context)
 
-    def add_code(self, user_input):
-        return self._run_chain(addPrompt, user_input)
+    def add_code(self, user_input, context=None):
+        return self._run_chain(addPrompt, user_input, context=context)
 
-    def modify_code(self, user_input):
-        return self._run_chain(modifyPrompt, user_input)
+    def modify_code(self, user_input, context=None):
+        return self._run_chain(modifyPrompt, user_input, context=context)
 
-    def write_tests(self, user_input):
-        return self._run_chain(testPrompt, user_input)
+    def write_tests(self, user_input, context=None):
+        return self._run_chain(testPrompt, user_input, context=context)
 
-    def search_for_vulnerabilities(self, user_input):
-        return self._run_chain(vulnerabilityPrompt, user_input)
+    def search_for_vulnerabilities(self, user_input, context=None):
+        return self._run_chain(vulnerabilityPrompt, user_input, context=context)
     
     def refactor_code(self, user_input):
         raise NotImplementedError
     
-

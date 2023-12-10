@@ -167,7 +167,7 @@ def display_class_function_details(graph_builder, node_id):
             st.markdown(f"#### Class: {class_name}")
         with col1:
             expanded = st.session_state['expanded_classes'][class_name]
-            expand_button = st.button('🚀 Close Ask LLM', key=f'ask_llm_class_{node_id}_{class_name}')
+            expand_button = st.button('🚀 Ask LLM', key=f'ask_llm_class_{node_id}_{class_name}')
 
             if expand_button or expanded:
                 # with st.expander("LLM Prompts", expanded=expanded):
@@ -175,12 +175,13 @@ def display_class_function_details(graph_builder, node_id):
 
                 st.markdown(f"#### LLM Prompts")
                 selected_prompt = st.selectbox("Select a prompt template:",
-                                                ["Describe", "Ask Question", "Refactor", "Write Tests"],
+                                                ["Modify", "Write Tests", "Search for Vulnerabilities",
+                                                 'Explain', 'Refactor'],
                                                 key=f'prompt_select_{node_id}')
                 additional_info = st.text_area("Additional information:", key=f'additional_info_{node_id}')
 
                 if st.button("Submit to LLM", key=f'submit_llm_{node_id}'):
-                    process_prompt(selected_prompt, additional_info, node_id)
+                    process_prompt(selected_prompt, additional_info, node_id, class_info.source_code)
         st.text(f"Docstring: {class_info.docstring}")
         st.markdown("```python\n" + class_info.source_code + "\n```")
 
@@ -190,7 +191,7 @@ def display_class_function_details(graph_builder, node_id):
             st.markdown(f"#### Function: {func_name}")
         with col1:
             expanded = st.session_state['expanded_functions'][func_name]
-            expand_button = st.button('🚀 Close Ask LLM', key=f'ask_llm_func_{node_id}_{func_name}')
+            expand_button = st.button('🚀 Ask LLM', key=f'ask_llm_func_{node_id}_{func_name}')
 
             if expand_button or expanded:
                 # with st.expander("LLM Prompts", expanded=st.session_state['expanded_functions'][func_name]):
@@ -198,18 +199,18 @@ def display_class_function_details(graph_builder, node_id):
 
                 st.markdown(f"#### LLM Prompts")
                 selected_prompt = st.selectbox("Select a prompt template:",
-                                                ["Describe", "Ask Question", "Refactor", "Write Tests",
-                                                 "Add Code", "Modify Code", "Search for Vulnerabilities"],
+                                                ["Modify", "Write Tests", "Search for Vulnerabilities",
+                                                 'Explain', 'Refactor'],
                                                 key=f'prompt_select_{node_id}')
                 additional_info = st.text_area("Additional information:", key=f'additional_info_{node_id}')
 
                 if st.button("Submit to LLM", key=f'submit_llm_{node_id}'):
-                    process_prompt(selected_prompt, additional_info, node_id)
+                    process_prompt(selected_prompt, additional_info, node_id, class_info.source_code)
         st.text(f"Docstring: {func_info.docstring}")
         st.markdown("```python\n" + func_info.source_code + "\n```")
 
 
-def process_prompt(prompt_template, additional_info, node_id):
+def process_prompt(prompt_template, additional_info, node_id, source_code=None):
     # Placeholder function to process the prompt
     # TODO: RAG model processing logic here - bois please do this jesli możecie
     
@@ -217,20 +218,20 @@ def process_prompt(prompt_template, additional_info, node_id):
         f"Processing {prompt_template} with {additional_info} for node {node_id}")  # Here you would integrate your RAG model processing logic
 
     manager = RagManager('credentials.yaml', 'docstring_based_index', 'credentials.yaml')
-    if prompt_template == 'Describe':
-        result = manager.describe_code(additional_info)
-    elif prompt_template == 'Ask Question':
-        result = manager.describe_code(additional_info) #???
-    elif prompt_template == 'Refactor':
-        result = manager.refactor_code(additional_info)
-    elif prompt_template == 'Write Tests':
-        result = manager.write_tests(additional_info)
-    elif prompt_template == 'Add Code':
+    if prompt_template == 'Modify Code': # modifyPrompt - context provided
+        result = manager.modify_code(additional_info, context=source_code)
+    elif prompt_template == 'Analyze': # analyzePrompt - retrieve context
+        result = manager.analyze_code(additional_info)
+    elif prompt_template == 'Add Code': # addPrompt - retrieve context
         result = manager.add_code(additional_info)
-    elif prompt_template == 'Modify Code':
-        result = manager.modify_code(additional_info)
-    elif prompt_template == 'Search for Vulnerabilities':
-        result = manager.search_for_vulnerabilities(additional_info)
+    elif prompt_template == 'Write Tests': # testPrompt - context provided
+        result = manager.write_tests(additional_info, context=source_code)
+    elif prompt_template == 'Search for Vulnerabilities': # vulnerabilityPrompt - context provided
+        result = manager.search_for_vulnerabilities(additional_info, context=source_code)
+    elif prompt_template == 'Ask Question': 
+        raise NotImplementedError
+    elif prompt_template == 'Refactor':
+        raise NotImplementedError
     else:
         raise ValueError(f"Invalid prompt template: {prompt_template}")
 
