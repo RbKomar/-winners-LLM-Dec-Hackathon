@@ -9,3 +9,4 @@ tiktoken
 beautifulsoup4
 lxml
 streamlit-agraph
+streamlit-aggrid
