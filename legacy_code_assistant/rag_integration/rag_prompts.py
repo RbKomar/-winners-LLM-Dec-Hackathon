@@ -7,18 +7,18 @@ Q:
 Question: Modify the function to calculate a student's average grade so that the final exam counts as 40percent of the overall grade, regardless of the number of grades.
 
 Context: 
-main function: 
+
+```py
 def calculate_average(grades):
     if not grades:
         return 0
     return sum(grades) / len(grades)
 
-Function relations:[ idx:0,name: calculate_average,idx:1,name: generate_student_report,]
-
-Code of other functions: 
 def generate_student_report(student_id, grades):
     average = calculate_average(grades)
     return average
+
+```
 
 Process of thinking:
 
@@ -41,8 +41,7 @@ Changes will not cause errors inside higher functions. End of process, return th
 
 A:
 
-Function:  
-
+```py
 def calculate_average(grades):
     if not grades:
         return 0
@@ -62,11 +61,8 @@ def calculate_average(grades):
     weighted_average = (other_grades_weight * other_average) + (final_exam_weight * final_exam)
     return weighted_average
 
-End of Function  
-
-Is Destroying: false
-
-
+```
+    
 Q:
 Question: {question}
 Context: {context}   
@@ -85,18 +81,21 @@ Remember to do this step by step.
 Q: 
 Question: Please provide me analysis of how is discounted price is calculated.
 Context: 
+
+```py
 def calculate_discounted_price(price, discount_rate):
-if discount_rate < 0 or discount_rate > 1:
-    raise ValueError("Invalid discount rate. Please provide a rate between 0 and 1.")
+    if discount_rate < 0 or discount_rate > 1:
+        raise ValueError("Invalid discount rate. Please provide a rate between 0 and 1.")
 
-discount = price * discount_rate
-discounted_price = price - discount
-return discounted_price
+    discount = price * discount_rate
+    discounted_price = price - discount
+    return discounted_price
 
+```
 
 
 A:
-Name of the Function oraz Class or module: calculate_discounted_price
+Name of the Function and Class or module: calculate_discounted_price
 Purpose of the Function:
 
 The function calculate_discounted_price calculates the discounted price of an item based on its original price and a discount rate.
@@ -154,6 +153,8 @@ Q:
 Question: Develop a new function that calculates the average of the sum and product of two numbers.
 
 Context: 
+
+```py
 def add_numbers(a, b):
     //Add to values
     return a + b
@@ -161,6 +162,8 @@ def add_numbers(a, b):
 def multiply_numbers(a, b):
     //multiply two numbers
     return a * b
+
+```
 
 Process of thinking:
 Steps to Create the New Function
@@ -180,14 +183,16 @@ Finally, it will calculate the average of these two values.
 Write the Function Code
 
 A:
-Generated function:
+
+```py
 def average_sum_product(x, y):
     //Calculate the average of the sum and product of two numbers.
     sum_of_numbers = add_numbers(x, y)
     product_of_numbers = multiply_numbers(x, y)
     average = (sum_of_numbers + product_of_numbers) / 2
     return average
-End of generated function
+
+```
 
 Q:
 Question: {question}
@@ -236,7 +241,7 @@ class SubjectTest(TestCase):
         
 
 as example test for django. Write me another. Remember to take it slow and focus on step by step approach to the problem.
-Quality over quantity. In the end merge all little steps.
+Quality over quantity.
 
 Q:
 Question: {question}

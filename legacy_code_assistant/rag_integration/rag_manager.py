@@ -56,10 +56,10 @@ class RagManager:
         self.retriever = self.kbb_docs.get_retriever()
 
 
-    def _build_chain(self, template, context=None):
+    def _build_chain(self, template, question=None, context=None):
         prompt = ChatPromptTemplate.from_template(template)
 
-        if context is not None:
+        if context is None:
             chain = (
                 {"context": self.retriever | format_docs,
                  "question": RunnablePassthrough()}
@@ -69,7 +69,7 @@ class RagManager:
             )
         else:
             chain = (
-                {'context': context, 
+                {'context': RunnablePassthrough(), 
                  "question": RunnablePassthrough()}
                 | prompt
                 | self.model
@@ -79,7 +79,10 @@ class RagManager:
     
     def _run_chain(self, prompt_template, user_input, context=None):
         chain = self._build_chain(prompt_template, context=context)
-        result = chain.invoke(user_input)
+        input_dict = {'question': user_input}
+        if context is not None:
+            input_dict['context'] = context
+        result = chain.invoke(input_dict)
         return result
 
     def analyze_code(self, user_input, context=None):
