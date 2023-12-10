@@ -139,27 +139,43 @@ class CodeAnalyzer:
                 content = f.read()
 
             classes, functions, mod_info = extract_all(content)
+
             for cl, cl_info in classes.items():
-                cl_info['file'] = str(file)
-                cl_info['module'] = file.stem
-                cl_info['name'] = cl
-                cl_info['type'] = 'class'
-                fun_info['parent'] = fun_info['module']
-                results.append(cl_info)
+                info_dict = {}
+
+                info_dict['name'] = cl_info.name
+                info_dict['docstring'] = cl_info.docstring
+                info_dict['code'] = cl_info.source_code
+
+                info_dict['file'] = str(file)
+                info_dict['module'] = file.stem
+                info_dict['name'] = cl
+                info_dict['type'] = 'class'
+                info_dict['parent'] = info_dict['module']
+
+                results.append(info_dict)
 
             for fun, fun_info in functions.items():
-                fun_info['file'] = str(file)
-                fun_info['module'] = file.stem
-                fun_info['name'] = fun
+                info_dict = {}
+
+                info_dict['name'] = fun_info.name
+                info_dict['docstring'] = fun_info.docstring
+                info_dict['code'] = fun_info.source_code
+
+                info_dict['file'] = str(file)
+                info_dict['module'] = file.stem
+                info_dict['name'] = fun
                 if isinstance(fun, tuple):
-                    fun_info['parent'] = fun[0]
-                    fun_info['name'] = fun[1]
-                    fun_info['type'] = 'method'
+                    info_dict['parent'] = fun[0]
+                    print(fun[0])
+                    info_dict['name'] = fun[1]
+                    info_dict['type'] = 'method'
                 else:
-                    fun_info['parent'] = fun_info['module']
-                    fun_info['name'] = fun
-                    fun_info['type'] = 'function'
-                results.append(fun_info)
+                    info_dict['parent'] = info_dict['module']
+                    info_dict['name'] = fun
+                    info_dict['type'] = 'function'
+  
+                results.append(info_dict)
 
             mod_info['file'] = str(file)
             mod_info['module'] = file.stem

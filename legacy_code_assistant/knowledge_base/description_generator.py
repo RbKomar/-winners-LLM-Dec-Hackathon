@@ -27,8 +27,8 @@ class CodeConditionedGenerator:
 
     def generate_docstrings(self):
         prompt = '''
- Given the code of the {type} below your taks is to generate docString describing functions inside.
- .Firstly pay attention to all variables that
+Given the code of the {type} below your taks is to generate docString describing functions inside.
+Firstly pay attention to all variables that
 are used in the code. Secondly, analyze what is function doing with those variables.
 Based on this, deduce what steps are being taken in this function and what purpose they serve.
 Having all that informations gathered in your mind, 

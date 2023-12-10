@@ -2,8 +2,8 @@ import difflib
 import os
 import sys
 
-project_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
-sys.path.append(project_path)
+PROJECT_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(PROJECT_PATH)
 
 import contextlib
 import pathlib
@@ -15,9 +15,9 @@ import streamlit as st
 
 from legacy_code_assistant.knowledge_base.knowledge_graph.code_extractor import extract_classes_methods
 
-REPO_PATH = os.path.join(project_path, 'tests', 'test_repo')
+REPO_PATH = os.path.join(PROJECT_PATH, 'tests', 'test_repo')
 
-print(project_path, REPO_PATH)
+print(PROJECT_PATH, REPO_PATH)
 # Constants
 NODE_TYPE_COMMIT = "commit"
 NODE_TYPE_FILE = "file"
