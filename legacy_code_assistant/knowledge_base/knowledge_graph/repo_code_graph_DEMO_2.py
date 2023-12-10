@@ -106,7 +106,7 @@ def get_project_path():
 def main():
     st.set_page_config(page_title="Graph Visualization", layout='wide')
     project_path = get_project_path()
-    repo_path = st.sidebar.text_input("Repository Path", project_path + r'\tests\test_repo')
+    repo_path = st.sidebar.text_input("Repository Path", os.path.join(project_path, 'tests', 'test_repo'))
 
     if 'graph_analyzer' not in st.session_state:
         st.session_state['graph_analyzer'] = CodeGraphAnalyzer(repo_path)
@@ -154,20 +154,31 @@ def display_node_details(graph_analyzer, module_name, top_k=10):
 
 def display_class_function_details(graph_builder, node_id):
     """Display details of classes and functions in the node with an 'Ask LLM' button."""
+    if 'expanded_classes' not in st.session_state:
+        st.session_state['expanded_classes'] = {class_name: False for class_name in graph_builder.code_extractor.classes.keys()}
+    if 'expanded_functions' not in st.session_state:
+        st.session_state['expanded_functions'] = {func_name: False for func_name in graph_builder.code_extractor.functions.keys()}
+
     for class_name, class_info in graph_builder.code_extractor.classes.items():
         col1, col2 = st.columns([4, 1])
         with col1:
             st.markdown(f"#### Class: {class_name}")
-        with col2:
-            if st.button('🚀 Ask LLM', key=f'ask_llm_class_{node_id}_{class_name}'):
-                with st.expander("LLM Prompts", key=f'llm_expander_{node_id}'):
-                    selected_prompt = st.selectbox("Select a prompt template:",
-                                                   ["Describe", "Ask Question", "Refactor", "Write Tests"],
-                                                   key=f'prompt_select_{node_id}')
-                    additional_info = st.text_input("Additional information:", key=f'additional_info_{node_id}')
+        with col1:
+            expanded = st.session_state['expanded_classes'][class_name]
+            expand_button = st.button('🚀 Close Ask LLM', key=f'ask_llm_class_{node_id}_{class_name}')
 
-                    if st.button("Submit to LLM", key=f'submit_llm_{node_id}'):
-                        process_prompt(selected_prompt, additional_info, node_id)
+            if expand_button or expanded:
+                # with st.expander("LLM Prompts", expanded=expanded):
+                st.session_state['expanded_classes'][class_name] = True
+
+                st.markdown(f"#### LLM Prompts")
+                selected_prompt = st.selectbox("Select a prompt template:",
+                                                ["Describe", "Ask Question", "Refactor", "Write Tests"],
+                                                key=f'prompt_select_{node_id}')
+                additional_info = st.text_area("Additional information:", key=f'additional_info_{node_id}')
+
+                if st.button("Submit to LLM", key=f'submit_llm_{node_id}'):
+                    process_prompt(selected_prompt, additional_info, node_id)
         st.text(f"Docstring: {class_info.docstring}")
         st.markdown("```python\n" + class_info.source_code + "\n```")
 
@@ -175,16 +186,22 @@ def display_class_function_details(graph_builder, node_id):
         col1, col2 = st.columns([4, 1])
         with col1:
             st.markdown(f"#### Function: {func_name}")
-        with col2:
-            if st.button('🚀 Ask LLM', key=f'ask_llm_function_{node_id}_{func_name}'):
-                with st.expander("LLM Prompts", key=f'llm_expander_{node_id}'):
-                    selected_prompt = st.selectbox("Select a prompt template:",
-                                                   ["Describe", "Ask Question", "Refactor", "Write Tests"],
-                                                   key=f'prompt_select_{node_id}')
-                    additional_info = st.text_input("Additional information:", key=f'additional_info_{node_id}')
+        with col1:
+            expanded = st.session_state['expanded_functions'][func_name]
+            expand_button = st.button('🚀 Close Ask LLM', key=f'ask_llm_func_{node_id}_{func_name}')
 
-                    if st.button("Submit to LLM", key=f'submit_llm_{node_id}'):
-                        process_prompt(selected_prompt, additional_info, node_id)
+            if expand_button or expanded:
+                # with st.expander("LLM Prompts", expanded=st.session_state['expanded_functions'][func_name]):
+                st.session_state['expanded_functions'][func_name] = True
+
+                st.markdown(f"#### LLM Prompts")
+                selected_prompt = st.selectbox("Select a prompt template:",
+                                                ["Describe", "Ask Question", "Refactor", "Write Tests"],
+                                                key=f'prompt_select_{node_id}')
+                additional_info = st.text_area("Additional information:", key=f'additional_info_{node_id}')
+
+                if st.button("Submit to LLM", key=f'submit_llm_{node_id}'):
+                    process_prompt(selected_prompt, additional_info, node_id)
         st.text(f"Docstring: {func_info.docstring}")
         st.markdown("```python\n" + func_info.source_code + "\n```")
 
