@@ -15,3 +15,6 @@ Nasze rozwiązanie zakłada dwa etapy:
 - Modyfikować istniejącego kod
 - Dodawać nowe funkcjonalności
 - Analizować wskazane części kodu (np. pod kontem poprawności, podatności)
+
+
+![Ekstrakcja wiedzy](./img/1.png "Ekstrakcja wiedzy")
