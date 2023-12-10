@@ -121,7 +121,7 @@ def get_project_path():
 def main():
     st.set_page_config(page_title="Graph Visualization", layout='wide')
     project_path = get_project_path()
-    repo_path = st.sidebar.text_input("Repository Path", os.path.join(project_path, 'tests', 'test_repo'))
+    repo_path = st.sidebar.text_input("Repository Path", os.path.join(project_path, 'tests', 'test_repo', 'Django-School-Management-System-master_unzipped'))
 
     if 'graph_analyzer' not in st.session_state:
         st.session_state['graph_analyzer'] = CodeGraphAnalyzer(repo_path)
