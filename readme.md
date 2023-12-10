@@ -5,7 +5,7 @@ the `legacy_code_assistant` project.
 
 ### Directory Path
 
-- **Location:** `./legacy_code_assistant/knowledge_base/knowledge_graph`
+- **Location:** `.demo/knowledge_graph`
 
 ### Demo Files
 
@@ -38,4 +38,13 @@ script:
 
 ```powershell
 python legacy_code_assistant/data_extraction/repo_cloner.py
+```
+
+### Credentials
+You must provide credentials in the demo folder. A file credentials.yaml should be placed there. It should have the following structure:
+```
+'AZURE_OPENAI_ENDPOINT': <URL OF AZURE ENDPOINT>
+'AZURE_OPENAI_API_KEY': <KEY>
+'Deployment_completion': <AZURE DEPLOYMENT FOR COMPLETION MODEL (e.g. gpt4)>
+'Deployment_embeddings':  <AZURE DEPLOYMENT FOR EMBEDDING MODEL (e.g. ada)>
 ```
