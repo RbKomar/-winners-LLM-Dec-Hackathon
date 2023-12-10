@@ -117,6 +117,19 @@ def main():
     top_modules = st.session_state['graph_analyzer'].get_top_modules(5)
     selected_module = st.sidebar.selectbox("Select Module", [module for module, _ in top_modules])
 
+    prev_module = st.session_state.get('selected_module', None)
+    if prev_module is not None and prev_module != selected_module:
+        del st.session_state['expanded_classes']
+        del st.session_state['expanded_functions']
+        del st.session_state['graph']
+
+    st.session_state['selected_module'] = selected_module
+
+    # st.markdown("## Ask LLM")
+    # question = st.text_area("", key='general_ask_llm')
+    # if question:
+    #     process_prompt('Analyze', question, None)
+        
     col1, col2 = st.columns([2, 1])
     generate_graph_button = st.sidebar.button('Generate Graph')
 
@@ -156,22 +169,36 @@ def display_node_details(graph_analyzer, module_name, top_k=10):
 
 def display_class_function_details(graph_builder, node_id):
     """Display details of classes and functions in the node with an 'Ask LLM' button."""
-    if 'expanded_classes' not in st.session_state:
-        st.session_state['expanded_classes'] = {class_name: False for class_name in graph_builder.code_extractor.classes.keys()}
-    if 'expanded_functions' not in st.session_state:
-        st.session_state['expanded_functions'] = {func_name: False for func_name in graph_builder.code_extractor.functions.keys()}
 
-    for class_name, class_info in graph_builder.code_extractor.classes.items():
+    if 'expanded_classes' not in st.session_state:
+        st.session_state['expanded_classes'] = {class_name + str(node_id): False for class_name in graph_builder.code_extractor.classes.keys()}
+    else:
+        for class_name in graph_builder.code_extractor.classes.keys():
+            elem_id = class_name + str(node_id) 
+            if elem_id not in st.session_state['expanded_classes']:
+                st.session_state['expanded_classes'][elem_id] = False
+
+    if 'expanded_functions' not in st.session_state:
+        st.session_state['expanded_functions'] = {func_name + str(node_id): False for func_name in graph_builder.code_extractor.functions.keys()}
+    else:
+        for func_name in graph_builder.code_extractor.functions.keys():
+            elem_id = func_name + str(node_id)
+            if elem_id not in st.session_state['expanded_functions']:
+                st.session_state['expanded_functions'][elem_id] = False
+
+
+    for class_name, class_info in graph_builder.code_extractor.classes.items(): 
+
         col1, col2 = st.columns([4, 1])
         with col1:
             st.markdown(f"#### Class: {class_name}")
         with col1:
-            expanded = st.session_state['expanded_classes'][class_name]
+            expanded = st.session_state['expanded_classes'][class_name + str(node_id)]
             expand_button = st.button('🚀 Ask LLM', key=f'ask_llm_class_{node_id}_{class_name}')
 
             if expand_button or expanded:
                 # with st.expander("LLM Prompts", expanded=expanded):
-                st.session_state['expanded_classes'][class_name] = True
+                st.session_state['expanded_classes'][class_name + str(node_id)] = True
 
                 st.markdown(f"#### LLM Prompts")
                 selected_prompt = st.selectbox("Select a prompt template:",
@@ -190,12 +217,12 @@ def display_class_function_details(graph_builder, node_id):
         with col1:
             st.markdown(f"#### Function: {func_name}")
         with col1:
-            expanded = st.session_state['expanded_functions'][func_name]
+            expanded = st.session_state['expanded_functions'][func_name + str(node_id)]
             expand_button = st.button('🚀 Ask LLM', key=f'ask_llm_func_{node_id}_{func_name}')
 
             if expand_button or expanded:
                 # with st.expander("LLM Prompts", expanded=st.session_state['expanded_functions'][func_name]):
-                st.session_state['expanded_functions'][func_name] = True
+                st.session_state['expanded_functions'][func_name + str(node_id)] = True
 
                 st.markdown(f"#### LLM Prompts")
                 selected_prompt = st.selectbox("Select a prompt template:",
@@ -218,7 +245,11 @@ def process_prompt(prompt_template, additional_info, node_id, source_code=None):
         f"Processing {prompt_template} with {additional_info} for node {node_id}")  # Here you would integrate your RAG model processing logic
 
     manager = RagManager('credentials.yaml', 'docstring_based_index', 'credentials.yaml')
-    if prompt_template == 'Modify Code': # modifyPrompt - context provided
+    if prompt_template == 'Modify': # modifyPrompt - context provided
+        print(additional_info)
+        print('-'*50)
+        print(source_code)
+        
         result = manager.modify_code(additional_info, context=source_code)
     elif prompt_template == 'Analyze': # analyzePrompt - retrieve context
         result = manager.analyze_code(additional_info)
