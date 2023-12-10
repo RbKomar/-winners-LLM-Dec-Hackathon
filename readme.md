@@ -5,7 +5,7 @@ the `legacy_code_assistant` project.
 
 ### Directory Path
 
-- **Location:** `.demo/knowledge_graph`
+- **Location:** `.demo/`
 
 ### Demo Files
 
