@@ -23,7 +23,7 @@ class FunctionItem:
     def __init__(self, name, docstring, code, file_path):
         self.name = name
         self.docstring = docstring
-        self.code = code
+        self.source_code = code
         self.usage = {}
         self.file_path = file_path
 

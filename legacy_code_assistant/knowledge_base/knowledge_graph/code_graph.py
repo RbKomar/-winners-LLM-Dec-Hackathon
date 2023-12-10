@@ -1,7 +1,12 @@
 import ast
+import os
+import sys
 
 import matplotlib.pyplot as plt
 import networkx as nx
+
+project_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+sys.path.append(project_path)
 
 from legacy_code_assistant.knowledge_base.knowledge_graph.code_extractor import CodeExtractor
 
@@ -23,7 +28,9 @@ class CodeUsageGraphBuilder:
 
     def _add_class_nodes_and_edges(self):
         for class_name, class_info in self.code_extractor.classes.items():
-            self.graph.add_node(class_name, item=class_info, type='class', file_path=class_info.file_path)
+            code_size = len(class_info.source_code.splitlines())
+            self.graph.add_node(class_name, item=class_info, type='class', file_path=class_info.file_path,
+                                size=code_size)
             for method_name, method_info in class_info.functions.items():
                 method_full_name = f'{class_name}.{method_name}'
                 self.graph.add_node(method_full_name, type='method', file_path=method_info.file_path)
@@ -34,7 +41,9 @@ class CodeUsageGraphBuilder:
 
     def _add_function_nodes_and_edges(self):
         for func_name, func_info in self.code_extractor.functions.items():
-            self.graph.add_node(func_name, item=func_info, type='function', file_path=func_info.file_path)
+            code_size = len(func_info.source_code.splitlines())
+            self.graph.add_node(func_name, item=func_info, type='function', file_path=func_info.file_path,
+                                size=code_size)
             for callee, count in func_info.usage.items():
                 self.graph.add_edge(func_name, callee, type='calls', weight=count)
 

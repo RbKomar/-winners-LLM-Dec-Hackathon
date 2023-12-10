@@ -1,7 +1,9 @@
 import difflib
+import os
 import sys
 
-sys.path.append('D:\\PROJEKTY\\LLM-Dec-Hackathon')
+PROJECT_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(PROJECT_PATH)
 
 import contextlib
 import pathlib
@@ -13,6 +15,9 @@ import streamlit as st
 
 from legacy_code_assistant.knowledge_base.knowledge_graph.code_extractor import extract_classes_methods
 
+REPO_PATH = os.path.join(PROJECT_PATH, 'tests', 'test_repo')
+
+print(PROJECT_PATH, REPO_PATH)
 # Constants
 NODE_TYPE_COMMIT = "commit"
 NODE_TYPE_FILE = "file"
@@ -28,11 +33,10 @@ class RepoAnalyzer:
         self.graph = nx.DiGraph()
 
     def get_repo_commits(self):
-        return [{'commit_id': commit.hexsha, 'author': commit.author.name,
-                 'date': commit.committed_datetime.isoformat(),
-                 'message': commit.message.strip(),
-                 'files': list(commit.stats.files.keys())}
-                for commit in self.repo.iter_commits()]
+        return [
+            {'commit_id': commit.hexsha, 'author': commit.author.name, 'date': commit.committed_datetime.isoformat(),
+             'message': commit.message.strip(), 'files': list(commit.stats.files.keys())} for commit in
+            self.repo.iter_commits()]
 
     def get_repo_files_metadata(self):
         files_metadata = defaultdict(dict)
@@ -77,19 +81,15 @@ class RepoAnalyzer:
         for commit in self.repo.iter_commits():
             # Using the diff to find changes in the commit
             parent = commit.parents[0] if commit.parents else EMPTY_TREE_SHA
-            diffs = {
-                diff.a_path: diff for diff in commit.diff(parent)
-            }
+            diffs = {diff.a_path: diff for diff in commit.diff(parent)}
 
             for diff in diffs.values():
                 if diff.change_type in ['A', 'M']:
                     methods = self.extract_methods_from_diff(diff)
                     for method, changes in methods.items():
-                        function_modifications[method].append({
-                            'commit_id': commit.hexsha,
-                            'date': commit.committed_datetime.isoformat(),
-                            'changes': changes
-                        })
+                        function_modifications[method].append(
+                            {'commit_id': commit.hexsha, 'date': commit.committed_datetime.isoformat(),
+                             'changes': changes})
         return function_modifications
 
     def extract_methods_from_diff(self, diff):
@@ -141,7 +141,8 @@ def visualize_modifications():
 
 
 def main():
-    repo_path = r'D:\\PROJEKTY\\LLM-Dec-Hackathon\\tests\\test_repo'
+    repo_path = REPO_PATH
+    print(repo_path)
     analyzer = RepoAnalyzer(repo_path)
 
     if 'commits' not in st.session_state:
