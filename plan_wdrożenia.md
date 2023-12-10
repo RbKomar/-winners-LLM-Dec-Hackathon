@@ -1,0 +1,1 @@
+![Plan wdrożenia](./img/3.png "Plan wdrożenia")
