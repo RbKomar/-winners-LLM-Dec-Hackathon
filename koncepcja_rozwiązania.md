@@ -16,5 +16,10 @@ Nasze rozwiązanie zakłada dwa etapy:
 - Dodawać nowe funkcjonalności
 - Analizować wskazane części kodu (np. pod kontem poprawności, podatności)
 
-
+## Wizualizacja ekstrakcji wiedzy
 ![Ekstrakcja wiedzy](./img/1.png "Ekstrakcja wiedzy")
+
+## Wizualizacja etapu użytkowania
+![Użytkownie](./img/2.png "Użytkownie")
+
+
