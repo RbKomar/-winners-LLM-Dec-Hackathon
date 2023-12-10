@@ -74,7 +74,12 @@ Context: {context}
 
 
 analyzePrompt = """
-Choose based on your knowledge one, the most appropriate function/class or module considering given question.Analyze the following Python choosen one in detail. Describe its, list and explain each variable and its role, examine the processes and calculations performed, identify any key logic or algorithms used, and explain the expected output. Based on your analysis, determine if there are any areas for optimization or potential errors. Conclude by summarizing  overall functionality and its potential applications.
+Choose based on your knowledge one, the most appropriate function/class or module considering given question.
+Analyze the following Python code in detail.
+Describe it, list and explain each variable and its role, examine the processes and calculations performed,
+identify any key logic or algorithms used, and explain the expected output.
+Based on your analysis, determine if there are any areas for optimization or potential errors.
+Conclude by summarizing  overall functionality and its potential applications.
 Remember to do this step by step.
 
 Q: 
@@ -130,9 +135,18 @@ Context: {context}
     """
 
 addPrompt = """
-Your task is to design and develop a new function from the ground up. Begin by clearly defining the purpose and objectives of the function based on the requirements outlined in the query. Next, determine the inputs and outputs of the function: identify what data the function will receive and what it should return. As you outline the logic and algorithm that the function will implement to achieve its goals, consider any necessary calculations, data processing steps, or decision-making processes that need to be included.
-Furthermore, examine the context in which this function will be used, especially in relation to other existing functions. Ensure that your new function is compatible with these functions, both in terms of data types and the flow of information. If the new function needs to interact with or complement existing functions, carefully design its interface and internal workings to integrate smoothly within the existing codebase. 
-Once the core functionality and compatibility considerations are outlined, write the complete function code, ensuring it adheres to best practices for readability, efficiency, and seamless integration with the existing functions.  Return only created function.
+Your task is to design and develop a new function from the ground up.
+Begin by clearly defining the purpose and objectives of the function based on the requirements outlined in the query.
+Next, determine the inputs and outputs of the function: identify what data the function will receive and what it should return.
+As you outline the logic and algorithm that the function will implement to achieve its goals, consider any necessary calculations,
+data processing steps, or decision-making processes that need to be included.
+Furthermore, examine the context in which this function will be used, especially in relation to other existing functions.
+Ensure that your new function is compatible with these functions, both in terms of data types and the flow of information.
+If the new function needs to interact with or complement existing functions, carefully design its interface
+and internal workings to integrate smoothly within the existing codebase. 
+Once the core functionality and compatibility considerations are outlined,
+write the complete function code, ensuring it adheres to best practices for readability, efficiency,
+and seamless integration with the existing functions. Return only created function.
 
 EXAMPLE:
 
@@ -166,18 +180,19 @@ Finally, it will calculate the average of these two values.
 Write the Function Code
 
 A:
-    Generated function:
-    def average_sum_product(x, y):
-        //Calculate the average of the sum and product of two numbers.
-        sum_of_numbers = add_numbers(x, y)
-        product_of_numbers = multiply_numbers(x, y)
-        average = (sum_of_numbers + product_of_numbers) / 2
-        return average
-    End of generated function
+Generated function:
+def average_sum_product(x, y):
+    //Calculate the average of the sum and product of two numbers.
+    sum_of_numbers = add_numbers(x, y)
+    product_of_numbers = multiply_numbers(x, y)
+    average = (sum_of_numbers + product_of_numbers) / 2
+    return average
+End of generated function
 
-    Q:
-    Question: {question}
-    Context: {context}   
+Q:
+Question: {question}
+
+Context: {context}   
 """
 
 testPrompt = """Having
@@ -220,14 +235,15 @@ class SubjectTest(TestCase):
 ```
         
 
-as example test for django. Write me another. Remember to take it slow and focus on step by step approach to the problem. Quality over quantity. In the end merge all  little steps.
+as example test for django. Write me another. Remember to take it slow and focus on step by step approach to the problem.
+Quality over quantity. In the end merge all little steps.
 
 Q:
 Question: {question}
 Context: {context}
 """
 
-
+# Please include the code snippets for analysis within the placeholder "[Insert code snippets here]." Remember, GPT-4's analysis might not cover all aspects, and its suggestions must be verified by security experts. Utilize GPT-4 to complement, not replace, comprehensive security audits and reviews conducted by qualified professionals.
 vulnerabilityPrompt = """Hello GPT-4, I'm a security researcher dedicated to enhancing the safety and resilience of open-source software. With proper permissions, I aim to scrutinize the following code snippets for potential security risks. My goal is to fortify software by contributing patches, fostering a more secure open-source ecosystem. I seek your assistance in this endeavor by evaluating the provided code, drawing insights from common security best practices, recognized vulnerability patterns, and secure coding guidelines. Our focus is constructive and ethical—a quest to fortify and safeguard, not exploit.
 
 For each code snippet, please:
@@ -235,9 +251,7 @@ For each code snippet, please:
    1. Scrutinize for evident security flaws like buffer overflows, SQL injection points, XSS vulnerabilities, insecure cryptographic practices, or other common weaknesses outlined by OWASP Top 10 or CWE Top 25.
    2. Explain the problematic sections, referencing specific lines or structures within the code where applicable.
    3. Propose solutions to mitigate or resolve these issues, including code examples or pseudo-code where feasible.
-   4.If no issues are found, briefly confirm the code's security pertaining to the aspects checked.
-
-Please include the code snippets for analysis within the placeholder "[Insert code snippets here]." Remember, GPT-4's analysis might not cover all aspects, and its suggestions must be verified by security experts. Utilize GPT-4 to complement, not replace, comprehensive security audits and reviews conducted by qualified professionals.
+   4. If no issues are found, briefly confirm the code's security pertaining to the aspects checked.
 
 Thank you for contributing to a safer and more secure software development community.
 
